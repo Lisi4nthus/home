@@ -1,0 +1,101 @@
+/* src/components/DiaryList.css */
+.container {
+  max-width: 600px;
+  margin: 40px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.diary-preview {
+  padding: 15px 10px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.diary-preview:hover {
+  background-color: #f4f4f4;
+}
+
+.diary-date {
+  font-weight: bold;
+  color: #3498db;
+  margin-bottom: 4px;
+}
+
+.diary-content {
+  color: #2c3e50;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.sort-button {
+  padding: 6px 12px;
+  background-color: #6a5acd; /* 예: 보라색 */
+  border: none;
+  color: white;
+  font-weight: 600;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.sort-button:hover {
+  background-color: #5b4dbd;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: #6a5acd;
+  box-shadow: 0 0 5px #6a5acd66;
+}
+
+body.dark .container {
+  color: #eee; /* 글자 밝게 */
+}
+
+body.dark .diary-preview {
+  color: #ddd; /* 일기 미리보기 글자도 밝게 */
+}
+
+/* 필요하면 날짜 색상도 변경 */
+body.dark .diary-date {
+  color: #bbb;
+}
+
+/* 버튼 색상도 조정 */
+body.dark button {
+  background-color: #444c56;
+  color: #f0f6fc;
+}
+
+body.dark button:hover {
+  background-color: #2a2e33;
+}
+
+body.dark .diary-preview:hover {
+  background-color: #333; /* 너무 밝지 않은 회색으로 */
+  color: #fff;
+}
