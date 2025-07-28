@@ -1,0 +1,85 @@
+.dashboard-page {
+  padding: 2rem;
+  min-height: calc(100vh - 60px);
+  transition: all 0.3s ease;
+}
+
+/* 라이트 모드 */
+[data-theme="light"] .dashboard-page {
+  background-color: #f5f6fa;
+  color: #333;
+}
+
+[data-theme="light"] .dashboard-page .dashboard-card {
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .dashboard-page a {
+  color: #0066cc;
+}
+
+/* 다크 모드 */
+[data-theme="dark"] .dashboard-page {
+  background-color: #1a1a1a;
+  color: #fff;
+}
+
+[data-theme="dark"] .dashboard-page .dashboard-card {
+  background-color: #2d2d2d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  color: #fff;
+}
+
+[data-theme="dark"] .dashboard-page h1,
+[data-theme="dark"] .dashboard-page h2 {
+  color: #fff;
+}
+
+[data-theme="dark"] .dashboard-page a {
+  color: #66b3ff;
+}
+
+/* 카드 레이아웃 */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3x2 레이아웃을 위해 3열로 고정 */
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.dashboard-card {
+  padding: 1.5rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+}
+
+.dashboard-card h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+/* 로딩 및 에러 메시지 스타일 */
+[data-theme="dark"] .dashboard-page .dashboard-card div[style*="color: red"] {
+  color: #ff6b6b !important;
+}
+
+/* 뉴스 리스트 스타일 */
+.dashboard-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dashboard-card li {
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.dashboard-card li:last-child {
+  margin-bottom: 0;
+}

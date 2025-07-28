@@ -1,11 +1,21 @@
 /* 기존 App.css 기본 스타일 유지 */
 .App {
   text-align: center;
-  background-color: #fafafa;
   min-height: 100vh;
   padding: 20px;
-  color: #333;
   font-family: "Noto Sans KR", sans-serif;
+}
+
+/* 라이트 모드 기본 스타일 */
+[data-theme="light"] .App {
+  background-color: #fafafa;
+  color: #333;
+}
+
+/* 다크 모드 기본 스타일 */
+[data-theme="dark"] .App {
+  background-color: #1a1a1a;
+  color: #fff;
 }
 
 /* 검색 & 필터 컨테이너 추가 */

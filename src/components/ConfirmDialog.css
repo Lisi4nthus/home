@@ -1,0 +1,147 @@
+.confirm-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.confirm-dialog {
+  background-color: var(--container-bg);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 100%;
+  animation: fadeInScale 0.2s ease-out;
+}
+
+.confirm-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 20px 10px 20px;
+}
+
+.confirm-dialog-icon {
+  font-size: 24px;
+}
+
+.confirm-dialog-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.confirm-dialog-content {
+  padding: 0 20px 20px 20px;
+}
+
+.confirm-dialog-message {
+  margin: 0;
+  color: var(--text-color);
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid var(--border-color);
+  justify-content: flex-end;
+}
+
+.confirm-dialog-cancel,
+.confirm-dialog-confirm {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 70px;
+}
+
+.confirm-dialog-cancel {
+  background-color: var(--hover-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.confirm-dialog-cancel:hover {
+  background-color: var(--border-color);
+}
+
+.confirm-dialog-confirm {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.confirm-dialog-confirm:hover {
+  opacity: 0.9;
+}
+
+/* 타입별 스타일 */
+.confirm-dialog-danger .confirm-dialog-title {
+  color: #dc3545;
+}
+
+.confirm-dialog-confirm-danger {
+  background-color: #dc3545 !important;
+}
+
+.confirm-dialog-confirm-danger:hover {
+  background-color: #c82333 !important;
+}
+
+.confirm-dialog-warning .confirm-dialog-title {
+  color: #f39c12;
+}
+
+.confirm-dialog-confirm-warning {
+  background-color: #f39c12 !important;
+}
+
+.confirm-dialog-confirm-warning:hover {
+  background-color: #e67e22 !important;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .confirm-dialog-overlay {
+    padding: 10px;
+  }
+  
+  .confirm-dialog {
+    max-width: none;
+  }
+  
+  .confirm-dialog-actions {
+    flex-direction: column-reverse;
+  }
+  
+  .confirm-dialog-cancel,
+  .confirm-dialog-confirm {
+    width: 100%;
+    min-width: auto;
+  }
+}

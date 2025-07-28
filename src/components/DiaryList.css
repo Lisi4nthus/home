@@ -2,35 +2,37 @@
 .container {
   max-width: 600px;
   margin: 40px auto;
-  background: white;
+  background: var(--container-bg);
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
-  color: #2c3e50;
+  color: var(--text-color);
   margin-bottom: 20px;
 }
 
 .diary-preview {
   padding: 15px 10px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .diary-preview:hover {
-  background-color: #f4f4f4;
+  background-color: var(--hover-bg);
 }
 
 .diary-date {
   font-weight: bold;
-  color: #3498db;
+  color: var(--primary-color);
   margin-bottom: 4px;
 }
 
 .diary-content {
-  color: #2c3e50;
+  color: var(--text-color);
+  line-height: 1.4;
 }
 
 .header-row {
@@ -42,7 +44,7 @@ h2 {
 
 .sort-button {
   padding: 6px 12px;
-  background-color: #6a5acd; /* 예: 보라색 */
+  background-color: var(--primary-color);
   border: none;
   color: white;
   font-weight: 600;
@@ -52,50 +54,26 @@ h2 {
 }
 
 .sort-button:hover {
-  background-color: #5b4dbd;
+  opacity: 0.9;
 }
 
 .search-input {
   width: 100%;
   padding: 8px 12px;
   margin-bottom: 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 1rem;
   box-sizing: border-box;
   outline: none;
   transition: border-color 0.2s ease;
+  background-color: var(--input-bg);
+  color: var(--text-color);
 }
 
 .search-input:focus {
-  border-color: #6a5acd;
-  box-shadow: 0 0 5px #6a5acd66;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px rgba(108, 90, 205, 0.4);
 }
 
-body.dark .container {
-  color: #eee; /* 글자 밝게 */
-}
-
-body.dark .diary-preview {
-  color: #ddd; /* 일기 미리보기 글자도 밝게 */
-}
-
-/* 필요하면 날짜 색상도 변경 */
-body.dark .diary-date {
-  color: #bbb;
-}
-
-/* 버튼 색상도 조정 */
-body.dark button {
-  background-color: #444c56;
-  color: #f0f6fc;
-}
-
-body.dark button:hover {
-  background-color: #2a2e33;
-}
-
-body.dark .diary-preview:hover {
-  background-color: #333; /* 너무 밝지 않은 회색으로 */
-  color: #fff;
-}
+/* 다크모드 스타일은 CSS 변수를 통해 자동 적용됨 */

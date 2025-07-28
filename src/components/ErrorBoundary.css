@@ -1,0 +1,133 @@
+.error-boundary-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-color);
+  padding: 20px;
+}
+
+.error-boundary-content {
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  background-color: var(--container-bg);
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+}
+
+.error-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.error-boundary-content h2 {
+  color: var(--text-color);
+  margin-bottom: 16px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.error-message {
+  color: var(--text-color);
+  margin-bottom: 30px;
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
+.error-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.error-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.error-btn.primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.error-btn.primary:hover {
+  opacity: 0.9;
+}
+
+.error-btn.secondary {
+  background-color: var(--secondary-bg);
+  color: var(--text-color);
+}
+
+.error-btn.secondary:hover {
+  background-color: var(--secondary-hover-bg);
+}
+
+.error-details {
+  text-align: left;
+  margin-top: 20px;
+  padding: 15px;
+  background-color: var(--input-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.error-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 10px;
+}
+
+.error-stack {
+  color: var(--text-color);
+}
+
+.error-stack h4 {
+  margin: 15px 0 5px 0;
+  color: var(--danger-color);
+  font-size: 14px;
+}
+
+.error-stack pre {
+  background-color: var(--hover-bg);
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .error-boundary-content {
+    padding: 30px 20px;
+  }
+  
+  .error-icon {
+    font-size: 48px;
+  }
+  
+  .error-boundary-content h2 {
+    font-size: 20px;
+  }
+  
+  .error-actions {
+    flex-direction: column;
+  }
+  
+  .error-btn {
+    width: 100%;
+  }
+}
