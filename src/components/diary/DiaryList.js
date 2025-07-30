@@ -1,5 +1,5 @@
 import React, { useContext, useState, useMemo } from "react";
-import { DiaryStateContext } from "../App";
+import { DiaryStateContext } from "../../App";
 import { useNavigate } from "react-router-dom";
 import "./DiaryList.css";
 

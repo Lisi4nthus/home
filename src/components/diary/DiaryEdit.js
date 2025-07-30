@@ -1,7 +1,7 @@
 // src/components/DiaryEdit.js
 import React, { useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { DiaryDispatchContext, DiaryStateContext } from "../App";
+import { DiaryDispatchContext, DiaryStateContext } from "../../App";
 import "./DiaryEdit.css";
 
 const DiaryEdit = () => {

@@ -1,8 +1,8 @@
 // src/components/DiaryView.js
 import React, { useContext, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { DiaryStateContext, DiaryDispatchContext } from "../App";
-import ConfirmDialog from "./ConfirmDialog";
+import { DiaryStateContext, DiaryDispatchContext } from "../../App";
+import ConfirmDialog from "../common/ConfirmDialog";
 import "./DiaryView.css";
 
 const DiaryView = () => {

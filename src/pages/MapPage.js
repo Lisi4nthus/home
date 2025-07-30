@@ -1,6 +1,6 @@
 // src/pages/MapPage.js
 import React from "react";
-import Map from "../components/MapViewer";
+import Map from "../components/restaurant/MapViewer";
 
 const MapPage = () => {
   return (

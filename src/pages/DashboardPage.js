@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useContext } from "react";
+import { Link } from "react-router-dom"; // Link 임포트
 import { useTheme } from "../contexts/ThemeContext";
 import { DiaryStateContext } from "../App"; // DiaryStateContext 임포트
 import "./DashboardPage.css";
 
 const WEATHER_API_KEY = process.env.REACT_APP_WEATHER_API_KEY; // .env에 저장 필요
-const JTBC_RSS_URL =
-  "https://api.allorigins.win/get?url=https://fs.jtbc.co.kr/RSS/newsflash.xml";
+// const JTBC_RSS_URL =
+//   "https://api.allorigins.win/get?url=https://fs.jtbc.co.kr/RSS/newsflash.xml";
 
 const DashboardPage = () => {
   const { theme } = useTheme();
@@ -13,10 +14,35 @@ const DashboardPage = () => {
 
   const [weather, setWeather] = useState(null);
   const [exchangeRate, setExchangeRate] = useState(null);
-  const [news, setNews] = useState([]);
+  // const [news, setNews] = useState([]);
   const [quote, setQuote] = useState(null); // 오늘의 명언 상태 추가
   const [todos, setTodos] = useState([]); // 할 일 목록 상태 추가
   const [newTodo, setNewTodo] = useState(""); // 새 할 일 입력 상태 추가
+  const [pastDiary, setPastDiary] = useState(null); // 과거의 오늘 일기 상태 추가
+
+  // "과거의 오늘" 일기 찾기
+  useEffect(() => {
+    const today = new Date();
+    const todayMonth = today.getMonth() + 1;
+    const todayDate = today.getDate();
+
+    const pastEntries = diaryData.filter((entry) => {
+      const entryDate = new Date(entry.date);
+      return (
+        entryDate.getMonth() + 1 === todayMonth &&
+        entryDate.getDate() === todayDate &&
+        entryDate.getFullYear() < today.getFullYear()
+      );
+    });
+
+    if (pastEntries.length > 0) {
+      // 여러 개의 과거 일기가 있을 경우, 가장 최근의 일기를 보여줍니다.
+      const latestPastEntry = pastEntries.sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      )[0];
+      setPastDiary(latestPastEntry);
+    }
+  }, [diaryData]);
 
   // 일기 통계 계산
   const totalDiaryEntries = diaryData.length;
@@ -43,13 +69,13 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState({
     weather: true,
     exchange: true,
-    news: true,
+    // news: true,
     quote: true, // 명언 로딩 상태 추가
   });
   const [error, setError] = useState({
     weather: null,
     exchange: null,
-    news: null,
+    // news: null,
     quote: null, // 명언 에러 상태 추가
   });
 
@@ -118,29 +144,29 @@ const DashboardPage = () => {
     };
     fetchExchange();
 
-    // 뉴스 헤드라인 가져오기 (JTBC 속보 RSS, allorigins 프록시)
-    const fetchNews = async () => {
-      try {
-        const res = await fetch(JTBC_RSS_URL);
-        const data = await res.json();
-        const xmlText = data.contents;
-        const parser = new window.DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-        const items = xmlDoc.querySelectorAll("item");
-        const newsList = Array.from(items)
-          .slice(0, 5)
-          .map((item) => ({
-            title: item.querySelector("title")?.textContent,
-            link: item.querySelector("link")?.textContent,
-          }));
-        setNews(newsList);
-      } catch (e) {
-        setError((prev) => ({ ...prev, news: e.message }));
-      } finally {
-        setLoading((prev) => ({ ...prev, news: false }));
-      }
-    };
-    fetchNews();
+    // // 뉴스 헤드라인 가져오기 (JTBC 속보 RSS, allorigins 프록시)
+    // const fetchNews = async () => {
+    //   try {
+    //     const res = await fetch(JTBC_RSS_URL);
+    //     const data = await res.json();
+    //     const xmlText = data.contents;
+    //     const parser = new window.DOMParser();
+    //     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+    //     const items = xmlDoc.querySelectorAll("item");
+    //     const newsList = Array.from(items)
+    //       .slice(0, 5)
+    //       .map((item) => ({
+    //         title: item.querySelector("title")?.textContent,
+    //         link: item.querySelector("link")?.textContent,
+    //       }));
+    //     setNews(newsList);
+    //   } catch (e) {
+    //     setError((prev) => ({ ...prev, news: e.message }));
+    //   } finally {
+    //     setLoading((prev) => ({ ...prev, news: false }));
+    //   }
+    // };
+    // fetchNews();
 
     // 오늘의 명언 가져오기
     const fetchQuote = async () => {
@@ -211,41 +237,6 @@ const DashboardPage = () => {
           )}
         </section>
 
-        {/* 뉴스 카드 */}
-        <section className="dashboard-card">
-          <h2>뉴스 헤드라인</h2>
-          {loading.news ? (
-            <div>뉴스 정보를 불러오는 중...</div>
-          ) : error.news ? (
-            <div style={{ color: "red" }}>{error.news}</div>
-          ) : news && news.length > 0 ? (
-            <ul>
-              {news.map((item, idx) => (
-                <li key={idx}>
-                  <a href={item.link} target="_blank" rel="noopener noreferrer">
-                    {item.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div>뉴스 정보를 표시할 수 없습니다.</div>
-          )}
-        </section>
-
-        {/* 일기 통계 요약 카드 */}
-        <section className="dashboard-card">
-          <h2>일기 통계 요약</h2>
-          <div>
-            <p>
-              총 일기 수: <b>{totalDiaryEntries}</b>개
-            </p>
-            <p>
-              마지막 작성일: <b>{lastEntryDate}</b>
-            </p>
-          </div>
-        </section>
-
         {/* 오늘의 명언 카드 */}
         <section className="dashboard-card">
           <h2>오늘의 명언</h2>
@@ -267,11 +258,51 @@ const DashboardPage = () => {
           )}
         </section>
 
+        {/* 일기 통계 요약 카드 */}
+        <section className="dashboard-card">
+          <h2>일기 통계 요약</h2>
+          <div>
+            <p>
+              총 일기 수: <b>{totalDiaryEntries}</b>개
+            </p>
+            <p>
+              마지막 작성일: <b>{lastEntryDate}</b>
+            </p>
+          </div>
+        </section>
+
+        {/* 과거의 오늘 카드 */}
+        <section className="dashboard-card">
+          <h2>과거의 오늘</h2>
+          {pastDiary ? (
+            <div>
+              <p>
+                {new Date(pastDiary.date).getFullYear()}년{" "}
+                {new Date(pastDiary.date).getMonth() + 1}월{" "}
+                {new Date(pastDiary.date).getDate()}일
+              </p>
+              <p>{pastDiary.content.substring(0, 100)}...</p>
+              <Link to={`/diary/${pastDiary.id}`}>자세히 보기</Link>
+            </div>
+          ) : (
+            <div>과거에 작성된 일기가 없습니다.</div>
+          )}
+        </section>
+
         {/* 빠른 메모/할 일 목록 카드 */}
         <section className="dashboard-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "10px",
+            }}
+          >
             <h2>빠른 메모 / 할 일</h2>
-            <button onClick={addTodo} style={{ padding: '8px 12px' }}>추가</button>
+            <button onClick={addTodo} style={{ padding: "8px 12px" }}>
+              추가
+            </button>
           </div>
           <div>
             <input
@@ -279,14 +310,14 @@ const DashboardPage = () => {
               value={newTodo}
               onChange={(e) => setNewTodo(e.target.value)}
               onKeyPress={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === "Enter") {
                   addTodo();
                 }
               }}
               placeholder="새 할 일을 입력하세요..."
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+              style={{ width: "100%", padding: "8px", boxSizing: "border-box" }}
             />
-            <ul style={{ listStyle: 'none', padding: '0', marginTop: '10px' }}>
+            <ul style={{ listStyle: "none", padding: "0", marginTop: "10px" }}>
               {todos.map((todo) => (
                 <li
                   key={todo.id}

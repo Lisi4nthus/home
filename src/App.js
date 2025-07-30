@@ -12,18 +12,18 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase/firebase";
 import DiaryListPage from "./pages/DiaryListPage";
-import DiaryEditor from "./components/DiaryEditor";
-import DiaryView from "./components/DiaryView";
-import DiaryEdit from "./components/DiaryEdit";
+import DiaryEditor from "./components/diary/DiaryEditor";
+import DiaryView from "./components/diary/DiaryView";
+import DiaryEdit from "./components/diary/DiaryEdit";
 
-import RestaurantEditor from "./components/RestaurantEditor";
-import RestaurantList from "./components/RestaurantList";
+import RestaurantEditor from "./components/restaurant/RestaurantEditor";
+import RestaurantList from "./components/restaurant/RestaurantList";
 
 import MapPage from "./pages/MapPage";
-import Navigation from "./components/Navigation";
+import Navigation from "./components/common/Navigation";
 import { ToastProvider } from "./contexts/ToastContext";
 import { ErrorProvider, useError } from "./contexts/ErrorContext";
-import ErrorBoundary from "./components/ErrorBoundary";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 import DashboardPage from "./pages/DashboardPage";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
@@ -188,7 +188,7 @@ function AppContent() {
             <Navigation />
             <Routes>
               {/* Dashboard Route */}
-              <Route path="/" element={<DiaryListPage />} />
+              <Route path="/" element={<DashboardPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               {/* Diary Routes */}
               <Route path="/diary" element={<DiaryListPage />} />

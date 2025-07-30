@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { addRestaurant } from "../firebase/restaurantApi";
+import { addRestaurant } from "../../firebase/restaurantApi";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { db } from "../../firebase/firebase";
 
 const StarRating = ({ rating, setRating }) => {
   return (

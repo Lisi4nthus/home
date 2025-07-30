@@ -1,5 +1,5 @@
 
-import DiaryList from '../components/DiaryList';
+import DiaryList from '../components/diary/DiaryList';
 
 const DiaryListPage = () => {
     return (

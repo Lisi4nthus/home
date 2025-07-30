@@ -9,11 +9,20 @@ function Navigation() {
   const { isLoading } = useError();
 
   const navItems = [
-    { path: "/", icon: "📝", label: "일기" },
+    { path: "/dashboard", icon: "📊", label: "대시보드" },
+    { path: "/diary", icon: "📝", label: "일기" },
     { path: "/restaurant/list", icon: "🍽️", label: "맛집" },
     { path: "/map", icon: "🗺️", label: "지도" },
     { path: "/new", icon: "✏️", label: "작성" },
   ];
+
+  const getActivePath = () => {
+    if (location.pathname === '/' || location.pathname === '/dashboard') return '/dashboard';
+    if (location.pathname.startsWith('/diary')) return '/diary';
+    return location.pathname;
+  };
+
+  const activePath = getActivePath();
 
   return (
     <nav className="global-nav">
@@ -29,7 +38,7 @@ function Navigation() {
             <Link
               key={item.path}
               to={item.path}
-              className={`nav-item ${location.pathname === item.path ? "active" : ""}`}
+              className={`nav-item ${activePath === item.path ? "active" : ""}`}
             >
               <span className="nav-icon">{item.icon}</span>
               <span className="nav-label">{item.label}</span>

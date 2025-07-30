@@ -1,9 +1,9 @@
 // src/components/DiaryEditor.js
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { DiaryDispatchContext } from "../App";
-import { useToast } from "../contexts/ToastContext";
-import LoadingSpinner from "./LoadingSpinner";
+import { DiaryDispatchContext } from "../../App";
+import { useToast } from "../../contexts/ToastContext";
+import LoadingSpinner from "../common/LoadingSpinner";
 import "./DiaryEditor.css";
 
 const DiaryEditor = () => {

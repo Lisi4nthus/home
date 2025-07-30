@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { addRestaurant } from "../firebase/restaurantApi";
+import { addRestaurant } from "../../firebase/restaurantApi";
 
 const RestaurantForm = ({ onAdd }) => {
   const [name, setName] = useState("");
