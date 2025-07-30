@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
-import { useError } from "../contexts/ErrorContext";
+import { useError } from "../../contexts/ErrorContext";
 import "./Navigation.css";
 
 function Navigation() {
