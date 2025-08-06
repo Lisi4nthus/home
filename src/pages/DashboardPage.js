@@ -2,6 +2,8 @@ import React, { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom"; // Link 임포트
 import { useTheme } from "../contexts/ThemeContext";
 import { DiaryStateContext } from "../App"; // DiaryStateContext 임포트
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 import "./DashboardPage.css";
 
 const WEATHER_API_KEY = process.env.REACT_APP_WEATHER_API_KEY; // .env에 저장 필요
@@ -19,6 +21,42 @@ const DashboardPage = () => {
   const [todos, setTodos] = useState([]); // 할 일 목록 상태 추가
   const [newTodo, setNewTodo] = useState(""); // 새 할 일 입력 상태 추가
   const [pastDiary, setPastDiary] = useState(null); // 과거의 오늘 일기 상태 추가
+
+  const handleExport = async () => {
+    if (!window.confirm("모든 다이어리와 맛집 데이터를 JSON 파일로 다운로드하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      // 1. Firestore에서 모든 데이터 가져오기
+      const diarySnapshot = await getDocs(collection(db, "diary"));
+      const diaryData = diarySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      const restaurantSnapshot = await getDocs(collection(db, "restaurants"));
+      const restaurantData = restaurantSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      // 2. 데이터를 하나의 객체로 묶기
+      const exportData = {
+        diaries: diaryData,
+        restaurants: restaurantData,
+      };
+
+      // 3. JSON 파일로 변환 및 다운로드
+      const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+        JSON.stringify(exportData, null, 2)
+      )}`;
+      const link = document.createElement("a");
+      link.href = jsonString;
+      link.download = "my-diary-backup.json";
+      link.click();
+
+      alert("데이터를 성공적으로 다운로드했습니다.");
+
+    } catch (error) {
+      console.error("데이터 내보내기 실패:", error);
+      alert("데이터를 내보내는 중 오류가 발생했습니다. 콘솔을 확인해주세요.");
+    }
+  };
 
   // "과거의 오늘" 일기 찾기
   useEffect(() => {
@@ -258,19 +296,6 @@ const DashboardPage = () => {
           )}
         </section>
 
-        {/* 일기 통계 요약 카드 */}
-        <section className="dashboard-card">
-          <h2>일기 통계 요약</h2>
-          <div>
-            <p>
-              총 일기 수: <b>{totalDiaryEntries}</b>개
-            </p>
-            <p>
-              마지막 작성일: <b>{lastEntryDate}</b>
-            </p>
-          </div>
-        </section>
-
         {/* 과거의 오늘 카드 */}
         <section className="dashboard-card">
           <h2>과거의 오늘</h2>
@@ -287,6 +312,28 @@ const DashboardPage = () => {
           ) : (
             <div>과거에 작성된 일기가 없습니다.</div>
           )}
+        </section>
+
+        {/* 일기 통계 요약 카드 */}
+        <section className="dashboard-card">
+          <h2>일기 통계 요약</h2>
+          <div>
+            <p>
+              총 일기 수: <b>{totalDiaryEntries}</b>개
+            </p>
+            <p>
+              마지막 작성일: <b>{lastEntryDate}</b>
+            </p>
+          </div>
+        </section>
+
+        {/* 데이터 백업 카드 */}
+        <section className="dashboard-card">
+          <h2>데이터 백업</h2>
+          <p>모든 기록을 안전하게 JSON 파일로 다운로드하여 보관하세요.</p>
+          <button onClick={handleExport} className="export-button" style={{ width: "100%", padding: "10px", marginTop: "10px" }}>
+            내 데이터 다운로드
+          </button>
         </section>
 
         {/* 빠른 메모/할 일 목록 카드 */}

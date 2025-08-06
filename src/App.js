@@ -197,6 +197,7 @@ function AppContent() {
               <Route path="/edit/:id" element={<DiaryEdit />} />
               {/* Restaurant Routes */}
               <Route path="/restaurant/new" element={<RestaurantEditor />} />
+              <Route path="/restaurant/edit/:id" element={<RestaurantEditor />} />
               <Route path="/restaurant/list" element={<RestaurantList />} />
               {/* Map Route */}
               <Route path="/map" element={<MapPage />} />

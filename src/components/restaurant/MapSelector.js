@@ -1,51 +1,50 @@
 import { useEffect, useRef } from "react";
 
 const MapSelector = ({ onLocationSelect }) => {
-  const markerRef = useRef(null); // 🔹 마커 상태 관리
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REACT_APP_KAKAO_API_KEY}&autoload=false&libraries=services`;
-    script.async = true;
-    script.onload = () => {
-      window.kakao.maps.load(() => {
-        const container = document.getElementById("map");
-        const options = {
-          center: new window.kakao.maps.LatLng(37.5665, 126.978),
-          level: 3,
-        };
-        const map = new window.kakao.maps.Map(container, options);
+    const initMap = () => {
+      const { naver } = window;
+      if (!naver || !naver.maps) {
+        console.error("Naver Maps API not loaded");
+        return;
+      }
 
-        window.kakao.maps.event.addListener(
-          map,
-          "click",
-          function (mouseEvent) {
-            const latlng = mouseEvent.latLng;
+      const location = new naver.maps.LatLng(37.5665, 126.978);
+      const mapOptions = {
+        center: location,
+        zoom: 10,
+        zoomControl: true,
+      };
 
-            // 🔸 이전 마커 제거
-            if (markerRef.current) {
-              markerRef.current.setMap(null);
-            }
+      const map = new naver.maps.Map("map", mapOptions);
+      mapRef.current = map;
 
-            // 🔸 새 마커 생성
-            const newMarker = new window.kakao.maps.Marker({
-              map,
-              position: latlng,
-            });
-            markerRef.current = newMarker;
+      naver.maps.Event.addListener(map, "click", (e) => {
+        const { coord } = e;
+        onLocationSelect({ lat: coord.y, lng: coord.x });
 
-            // 🔸 부모로 좌표 전달
-            onLocationSelect({
-              lat: latlng.getLat(),
-              lng: latlng.getLng(),
-            });
-
-            map.panTo(latlng);
-          }
-        );
+        if (markerRef.current) {
+          markerRef.current.setPosition(coord);
+        } else {
+          markerRef.current = new naver.maps.Marker({
+            position: coord,
+            map: mapRef.current,
+          });
+        }
       });
     };
-    document.head.appendChild(script);
+
+    if (window.naver && window.naver.maps) {
+      initMap();
+    } else {
+      const mapScript = document.querySelector(
+        'script[src*="ncpClientId"]'
+      );
+      mapScript.addEventListener("load", initMap);
+    }
   }, [onLocationSelect]);
 
   return (

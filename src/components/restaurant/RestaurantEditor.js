@@ -3,10 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { addRestaurant } from "../../firebase/restaurantApi";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
+import ConfirmDialog from "../common/ConfirmDialog";
+import "./RestaurantEditor.css";
 
 const StarRating = ({ rating, setRating }) => {
   return (
-    <div style={{ display: "flex", gap: "4px", cursor: "pointer" }}>
+    <div className="star-rating" style={{ display: "flex", gap: "4px", cursor: "pointer" }}>
       {[1, 2, 3, 4, 5].map((star) => (
         <span
           key={star}
@@ -37,10 +39,11 @@ const RestaurantEditor = () => {
   const [lng, setLng] = useState(null);
   const [detail, setDetail] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const mapRef = useRef(null);
   const markerRef = useRef(null);
-  const placeMarkerRef = useRef(null);
 
   useEffect(() => {
     if (isEdit) {
@@ -62,81 +65,73 @@ const RestaurantEditor = () => {
   }, [id, isEdit]);
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REACT_APP_KAKAO_API_KEY}&autoload=false&libraries=services`;
-    script.async = true;
-    script.onload = () => {
-      window.kakao.maps.load(() => {
-        const container = document.getElementById("restaurant-map");
-        const options = {
-          center:
-            lat && lng
-              ? new window.kakao.maps.LatLng(lat, lng)
-              : new window.kakao.maps.LatLng(37.5665, 126.978),
-          level: 3,
-        };
-        const mapInstance = new window.kakao.maps.Map(container, options);
-        mapRef.current = mapInstance;
+    const initMap = () => {
+      const { naver } = window;
+      if (!naver || !naver.maps) return;
 
-        if (lat && lng) {
-          const position = new window.kakao.maps.LatLng(lat, lng);
-          const marker = new window.kakao.maps.Marker({
-            position,
-            map: mapInstance,
-          });
-          markerRef.current = marker;
-        }
+      const mapOptions = {
+        center: new naver.maps.LatLng(lat || 37.5665, lng || 126.978),
+        zoom: 15,
+      };
+      const map = new naver.maps.Map("restaurant-map", mapOptions);
+      mapRef.current = map;
 
-        window.kakao.maps.event.addListener(mapInstance, "click", (e) => {
-          const clickedLatLng = e.latLng;
-          setLat(clickedLatLng.getLat());
-          setLng(clickedLatLng.getLng());
-
-          if (markerRef.current) {
-            markerRef.current.setPosition(clickedLatLng);
-          } else {
-            const marker = new window.kakao.maps.Marker({
-              position: clickedLatLng,
-              map: mapInstance,
-            });
-            markerRef.current = marker;
-          }
+      if (lat && lng) {
+        markerRef.current = new naver.maps.Marker({
+          position: new naver.maps.LatLng(lat, lng),
+          map,
         });
+      }
+
+      naver.maps.Event.addListener(map, "click", (e) => {
+        const { coord } = e;
+        setLat(coord.y);
+        setLng(coord.x);
+        if (markerRef.current) {
+          markerRef.current.setPosition(coord);
+        } else {
+          markerRef.current = new naver.maps.Marker({
+            position: coord,
+            map,
+          });
+        }
       });
     };
-    document.head.appendChild(script);
+
+    if (window.naver && window.naver.maps) {
+      initMap();
+    } else {
+      const mapScript = document.querySelector(
+        'script[src*="ncpKeyId"]'
+      );
+      mapScript.addEventListener("load", initMap);
+    }
   }, [lat, lng]);
 
   const handleSearchPlace = () => {
-    const { kakao } = window;
-    const ps = new kakao.maps.services.Places();
-    ps.keywordSearch(searchQuery, (data, status) => {
-      if (status === kakao.maps.services.Status.OK && data.length > 0) {
-        const place = data[0];
-        const placeLatLng = new kakao.maps.LatLng(place.y, place.x);
+    if (!searchQuery.trim()) {
+      setModalMessage("주소 또는 장소명을 입력해주세요.");
+      setShowModal(true);
+      return;
+    }
 
-        setLat(parseFloat(place.y));
-        setLng(parseFloat(place.x));
-
-        const map = mapRef.current;
-        map.setCenter(placeLatLng);
-
-        if (placeMarkerRef.current) {
-          placeMarkerRef.current.setMap(null);
-        }
-
-        const marker = new kakao.maps.Marker({
-          map,
-          position: placeLatLng,
-        });
-        placeMarkerRef.current = marker;
-
-        if (markerRef.current) {
-          markerRef.current.setMap(null);
-        }
-        markerRef.current = marker;
+    const { naver } = window;
+    naver.maps.Service.geocode({ query: searchQuery }, (status, response) => {
+      if (status !== naver.maps.Service.Status.OK) {
+        return alert("검색 결과가 없습니다.");
+      }
+      const result = response.v2.addresses[0];
+      const point = new naver.maps.Point(result.x, result.y);
+      setLat(point.y);
+      setLng(point.x);
+      mapRef.current.setCenter(point);
+      if (markerRef.current) {
+        markerRef.current.setPosition(point);
       } else {
-        alert("검색 결과가 없습니다.");
+        markerRef.current = new naver.maps.Marker({
+          position: point,
+          map: mapRef.current,
+        });
       }
     });
   };
@@ -169,9 +164,9 @@ const RestaurantEditor = () => {
   };
 
   return (
-    <div className="container">
+    <div className="container restaurant-editor-container">
       <h2>{isEdit ? "✏️ 맛집 수정" : "🍜 맛집 등록"}</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="restaurant-editor-form">
         <StarRating rating={rating} setRating={setRating} />
         <input
           type="text"
@@ -192,32 +187,21 @@ const RestaurantEditor = () => {
           rows={2}
         />
 
-        {/* 🔍 검색창 */}
-        <div style={{ display: "flex", gap: "8px", margin: "10px 0" }}>
+        <div className="search-container">
           <input
             type="text"
             placeholder="주소 또는 장소명으로 검색"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ flex: 1 }}
           />
           <button type="button" onClick={handleSearchPlace}>
             검색
           </button>
         </div>
 
-        <div
-          id="restaurant-map"
-          style={{
-            width: "100%",
-            height: "300px",
-            marginTop: "10px",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
-          }}
-        ></div>
+        <div id="restaurant-map"></div>
 
-        <p style={{ fontSize: "14px", color: "#555" }}>
+        <p className="location-info">
           지도에서 위치를 클릭하거나, 주소/장소명으로 검색해 주세요
           {lat && lng && (
             <span>
@@ -226,8 +210,14 @@ const RestaurantEditor = () => {
             </span>
           )}
         </p>
-        <button type="submit">{isEdit ? "수정" : "등록"}</button>
+        <button type="submit" className="submit-btn">{isEdit ? "수정" : "등록"}</button>
       </form>
+
+      <ConfirmDialog
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        message={modalMessage}
+      />
     </div>
   );
 };

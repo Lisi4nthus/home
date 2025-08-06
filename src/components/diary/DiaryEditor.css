@@ -77,3 +77,26 @@ button.cancel-btn {
 button.cancel-btn:hover {
   background-color: var(--secondary-hover-bg);
 }
+
+@media (max-width: 768px) {
+  .editor-container {
+    margin: 20px auto;
+    padding: 15px;
+  }
+
+  .editor-form input[type="date"],
+  .editor-form textarea {
+    padding: 8px;
+    font-size: 0.95rem;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  button.save-btn,
+  button.cancel-btn {
+    width: 100%;
+    padding: 12px;
+  }
+}

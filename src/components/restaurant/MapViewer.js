@@ -8,8 +8,7 @@ const MapViewer = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [map, setMap] = useState(null);
   const markersRef = useRef([]);
-  const clustererRef = useRef(null);
-  const openInfoWindowsRef = useRef([]);
+  const infoWindowsRef = useRef([]);
 
   const [searchKeyword, setSearchKeyword] = useState("");
   const [ratingFilter, setRatingFilter] = useState(0);
@@ -17,33 +16,6 @@ const MapViewer = () => {
     document.body.classList.contains("dark")
   );
 
-  // InfoWindow 스타일 업데이트 함수
-  const updateInfoWindowStyles = useCallback((isDark) => {
-    console.log("테마 업데이트:", isDark ? "다크" : "라이트"); // 디버깅용
-
-    openInfoWindowsRef.current.forEach(
-      ({ content, nameEl, ratingEl, reviewEl }) => {
-        // 컨테이너 스타일 업데이트
-        content.style.backgroundColor = isDark ? "#2b2d31" : "#ffffff";
-        content.style.color = isDark ? "#dbdee1" : "#37352f";
-        content.style.border = isDark
-          ? "1px solid #3c4043"
-          : "1px solid #e9ecef";
-
-        // 개별 요소 스타일 업데이트
-        nameEl.style.color = "#5865f2"; // 프라이머리 색상은 동일
-        ratingEl.style.color = isDark ? "#dbdee1" : "#37352f";
-        reviewEl.style.color = isDark ? "#b5b9bd" : "#6b7280";
-
-        console.log("InfoWindow 스타일 적용:", {
-          backgroundColor: content.style.backgroundColor,
-          color: content.style.color,
-        });
-      }
-    );
-  }, []);
-
-  // 테마 변경 감지
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
@@ -51,183 +23,105 @@ const MapViewer = () => {
           mutation.type === "attributes" &&
           mutation.attributeName === "class"
         ) {
-          const newIsDarkMode = document.body.classList.contains("dark");
-          if (newIsDarkMode !== isDarkMode) {
-            setIsDarkMode(newIsDarkMode);
-            // 테마 변경 시 모든 InfoWindow 스타일 업데이트
-            updateInfoWindowStyles(newIsDarkMode);
-          }
+          setIsDarkMode(document.body.classList.contains("dark"));
         }
       });
     });
-
-    observer.observe(document.body, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
+    observer.observe(document.body, { attributes: true });
     return () => observer.disconnect();
-  }, [isDarkMode, updateInfoWindowStyles]);
-
-  const getColorByRating = (rating) => {
-    if (rating === 5) return "#2ecc71"; // 초록
-    if (rating === 4) return "#3498db"; // 파랑
-    if (rating === 3) return "#f1c40f"; // 노랑
-    if (rating === 2) return "#f39c12"; // 주황
-    return "#e74c3c"; // 빨강
-  };
-
-  const createMarkerImage = (color) => {
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
-        <circle cx="16" cy="16" r="10" fill="${color}" stroke="#333" stroke-width="2"/>
-      </svg>
-    `;
-    return new window.kakao.maps.MarkerImage(
-      `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-      new window.kakao.maps.Size(32, 32),
-      { offset: new window.kakao.maps.Point(16, 16) }
-    );
-  };
+  }, []);
 
   const createMarkers = useCallback(
     (mapInstance, dataList) => {
-      // 기존 마커/클러스터 제거
+      const { naver } = window;
+      if (!naver) return;
+
       markersRef.current.forEach((marker) => marker.setMap(null));
       markersRef.current = [];
-      if (clustererRef.current) {
-        clustererRef.current.clear();
-        clustererRef.current = null;
-      }
-      // InfoWindow 정보 초기화
-      openInfoWindowsRef.current = [];
+      infoWindowsRef.current.forEach((infoWindow) => infoWindow.close());
+      infoWindowsRef.current = [];
 
-      const kakao = window.kakao;
-      const clusterer = new kakao.maps.MarkerClusterer({
-        map: mapInstance,
-        averageCenter: true,
-        minLevel: 5,
-      });
-
-      const newMarkers = dataList.map((data) => {
-        const position = new kakao.maps.LatLng(data.lat, data.lng);
-        const color = getColorByRating(data.rating);
-        const markerImage = createMarkerImage(color);
-
-        const marker = new kakao.maps.Marker({
+      const markers = dataList.map((data) => {
+        const position = new naver.maps.LatLng(data.lat, data.lng);
+        const marker = new naver.maps.Marker({
           position,
-          image: markerImage,
+          map: mapInstance,
+          icon: {
+            content: `<div style="width:24px;height:24px;background-color:${getColorByRating(
+              data.rating
+            )};border-radius:50%;border:2px solid ${isDarkMode ? '#333' : '#fff'};box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>`,
+            anchor: new naver.maps.Point(12, 12),
+          },
         });
 
-        // 현재 테마 사용
+        const infoWindowContent = `
+        <div style="padding:10px;min-width:200px;background-color:${isDarkMode ? '#2b2d31' : '#fff'};color:${isDarkMode ? '#dbdee1' : '#37352f'};border-radius:8px;">
+          <strong style="font-size:16px;cursor:pointer;text-decoration:underline;color:${isDarkMode ? '#5865f2' : '#007bff'};" 
+                  onclick='document.getElementById("restaurant-detail-trigger-${data.id}").click()'>
+            ${data.name}
+          </strong>
+          <p style="margin:5px 0;color:${isDarkMode ? '#dbdee1' : '#37352f'};">⭐ ${data.rating}점</p>
+          <p style="font-size:12px;color:${isDarkMode ? '#b5b9bd' : '#6b7280'};">💬 ${data.review}</p>
+        </div>
+        <button id="restaurant-detail-trigger-${data.id}" style="display:none" 
+                onClick='window.selectRestaurant(${JSON.stringify(data)})'>
+        </button>
+      `;
 
-        const infowindowContent = document.createElement("div");
-        infowindowContent.style.padding = "8px";
-        infowindowContent.style.fontSize = "13px";
-        infowindowContent.style.backgroundColor = isDarkMode
-          ? "#2b2d31"
-          : "#ffffff";
-        infowindowContent.style.color = isDarkMode ? "#dbdee1" : "#37352f";
-        infowindowContent.style.borderRadius = "8px";
-        infowindowContent.style.border = isDarkMode
-          ? "1px solid #3c4043"
-          : "1px solid #e9ecef";
-        infowindowContent.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
-        infowindowContent.style.minWidth = "160px";
-
-        const nameEl = document.createElement("strong");
-        nameEl.style.textDecoration = "underline";
-        nameEl.style.cursor = "pointer";
-        nameEl.style.color = isDarkMode ? "#5865f2" : "#5865f2";
-        nameEl.style.marginBottom = "4px";
-        nameEl.style.display = "block";
-        nameEl.textContent = data.name;
-        nameEl.onclick = () => setSelectedRestaurant(data);
-
-        const ratingEl = document.createElement("div");
-        ratingEl.style.color = isDarkMode ? "#dbdee1" : "#37352f";
-        ratingEl.style.marginBottom = "2px";
-        ratingEl.textContent = `⭐ ${data.rating}점`;
-
-        const reviewEl = document.createElement("div");
-        reviewEl.style.color = isDarkMode ? "#b5b9bd" : "#6b7280";
-        reviewEl.style.fontSize = "12px";
-        reviewEl.style.marginTop = "4px";
-        reviewEl.textContent = `💬 ${data.review}`;
-
-        infowindowContent.appendChild(nameEl);
-        infowindowContent.appendChild(ratingEl);
-        infowindowContent.appendChild(reviewEl);
-
-        const infowindowInstance = new kakao.maps.InfoWindow({
-          content: infowindowContent,
+        const infoWindow = new naver.maps.InfoWindow({
+          content: infoWindowContent,
+          borderWidth: 0,
+          backgroundColor: "transparent",
+          pixelOffset: new naver.maps.Point(0, -20),
+          anchorSkew: true,
         });
 
-        // InfoWindow 정보를 ref에 저장
-        const infoWindowData = {
-          instance: infowindowInstance,
-          content: infowindowContent,
-          nameEl,
-          ratingEl,
-          reviewEl,
-        };
-
-        kakao.maps.event.addListener(marker, "click", () => {
-          // 클릭 시점에 현재 테마를 확인하여 스타일 업데이트
-          const currentIsDarkMode = document.body.classList.contains("dark");
-
-          // 컨테이너 스타일 업데이트
-          infowindowContent.style.backgroundColor = currentIsDarkMode
-            ? "#2b2d31"
-            : "#ffffff";
-          infowindowContent.style.color = currentIsDarkMode
-            ? "#dbdee1"
-            : "#37352f";
-          infowindowContent.style.border = currentIsDarkMode
-            ? "1px solid #3c4043"
-            : "1px solid #e9ecef";
-
-          // 개별 요소 스타일 업데이트
-          nameEl.style.color = currentIsDarkMode ? "#5865f2" : "#5865f2";
-          ratingEl.style.color = currentIsDarkMode ? "#dbdee1" : "#37352f";
-          reviewEl.style.color = currentIsDarkMode ? "#b5b9bd" : "#6b7280";
-
-          infowindowInstance.open(mapInstance, marker);
+        naver.maps.Event.addListener(marker, "click", () => {
+          if (infoWindow.getMap()) {
+            infoWindow.close();
+          } else {
+            infoWindow.open(mapInstance, marker);
+          }
         });
 
-        openInfoWindowsRef.current.push(infoWindowData);
-
+        markersRef.current.push(marker);
+        infoWindowsRef.current.push(infoWindow);
         return marker;
       });
 
-      clusterer.addMarkers(newMarkers);
-      markersRef.current = newMarkers;
-      clustererRef.current = clusterer;
+      if (window.MarkerClustering) {
+        new window.MarkerClustering({
+          minClusterSize: 2,
+          maxZoom: 13,
+          map: mapInstance,
+          markers: markers,
+          disableClickZoom: false,
+          gridSize: 120,
+          icons: [
+            {
+              content:
+                '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:12px;color:white;text-align:center;font-weight:bold;background:url(https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-1.png);background-size:contain;"></div>',
+              size: new naver.maps.Size(40, 40),
+              anchor: new naver.maps.Point(20, 20),
+            },
+          ],
+          indexGenerator: [10, 100, 200, 500, 1000],
+          stylingFunction: (clusterMarker, count) => {
+            clusterMarker
+              .getElement()
+              .querySelector("div:first-child").innerText = count;
+          },
+        });
+      }
     },
     [isDarkMode]
   );
 
-  // 테마 변경 시 마커 재생성
   useEffect(() => {
-    if (map && restaurants.length > 0) {
-      const filteredRestaurants = restaurants.filter((restaurant) => {
-        const matchesKeyword =
-          restaurant.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-          restaurant.review.toLowerCase().includes(searchKeyword.toLowerCase());
-        const matchesRating =
-          ratingFilter === 0 || restaurant.rating >= ratingFilter;
-        return matchesKeyword && matchesRating;
-      });
-      createMarkers(map, filteredRestaurants);
-    }
-  }, [
-    isDarkMode,
-    map,
-    restaurants,
-    searchKeyword,
-    ratingFilter,
-    createMarkers,
-  ]);
+    window.selectRestaurant = (data) => {
+      setSelectedRestaurant(data);
+    };
+  }, []);
 
   const loadRestaurants = useCallback(
     async (mapInstance) => {
@@ -237,61 +131,57 @@ const MapViewer = () => {
         ...doc.data(),
       }));
       setRestaurants(allData);
-
-      const filtered = allData.filter((r) => {
-        const matchKeyword =
-          r.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-          (r.review &&
-            r.review.toLowerCase().includes(searchKeyword.toLowerCase()));
-        const matchRating = ratingFilter === 0 || r.rating === ratingFilter;
-        return matchKeyword && matchRating;
-      });
-
-      createMarkers(mapInstance, filtered);
+      createMarkers(mapInstance, allData);
     },
-    [searchKeyword, ratingFilter, createMarkers]
+    [createMarkers]
   );
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REACT_APP_KAKAO_API_KEY}&autoload=false&libraries=services,clusterer`;
-    script.async = true;
-    script.onload = () => {
-      window.kakao.maps.load(async () => {
-        const container = document.getElementById("map");
-        const options = {
-          center: new window.kakao.maps.LatLng(37.5665, 126.978),
-          level: 3,
-        };
-        const mapInstance = new window.kakao.maps.Map(container, options);
-        setMap(mapInstance);
-        await loadRestaurants(mapInstance);
-      });
-    };
-    document.head.appendChild(script);
+    const initMap = () => {
+      const { naver } = window;
+      if (!naver || !naver.maps) return;
 
-    return () => {
-      markersRef.current.forEach((marker) => marker.setMap(null));
-      markersRef.current = [];
-      if (clustererRef.current) {
-        clustererRef.current.clear();
-        clustererRef.current = null;
-      }
+      const mapOptions = {
+        center: new naver.maps.LatLng(37.5665, 126.978),
+        zoom: 12,
+      };
+      const mapInstance = new naver.maps.Map("map", mapOptions);
+      setMap(mapInstance);
+      loadRestaurants(mapInstance);
     };
+
+    if (window.naver && window.naver.maps) {
+      initMap();
+    } else {
+      const mapScript = document.querySelector(
+        'script[src*="ncpClientId"]'
+      );
+      mapScript.addEventListener("load", initMap);
+    }
   }, [loadRestaurants]);
 
   useEffect(() => {
     if (!map) return;
+
     const filtered = restaurants.filter((r) => {
       const matchKeyword =
         r.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
         (r.review &&
           r.review.toLowerCase().includes(searchKeyword.toLowerCase()));
-      const matchRating = ratingFilter === 0 || r.rating === ratingFilter;
+      const matchRating = ratingFilter === 0 || r.rating >= ratingFilter;
       return matchKeyword && matchRating;
     });
+
     createMarkers(map, filtered);
   }, [searchKeyword, ratingFilter, restaurants, map, createMarkers]);
+
+  const getColorByRating = (rating) => {
+    if (rating === 5) return "#2ecc71";
+    if (rating === 4) return "#3498db";
+    if (rating === 3) return "#f1c40f";
+    if (rating === 2) return "#f39c12";
+    return "#e74c3c";
+  };
 
   return (
     <>
@@ -309,11 +199,11 @@ const MapViewer = () => {
           style={{ padding: "6px" }}
         >
           <option value={0}>별점 전체</option>
-          <option value={5}>5점</option>
-          <option value={4}>4점</option>
-          <option value={3}>3점</option>
-          <option value={2}>2점</option>
-          <option value={1}>1점</option>
+          <option value={5}>5점 이상</option>
+          <option value={4}>4점 이상</option>
+          <option value={3}>3점 이상</option>
+          <option value={2}>2점 이상</option>
+          <option value={1}>1점 이상</option>
         </select>
       </div>
 

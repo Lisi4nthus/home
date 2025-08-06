@@ -1,0 +1,58 @@
+.restaurant-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--text-color);
+  margin-top: 20px;
+}
+
+.restaurant-table th,
+.restaurant-table td {
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.restaurant-table thead {
+  background-color: var(--secondary-bg);
+}
+
+.restaurant-table th {
+  font-weight: 600;
+}
+
+.restaurant-table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s;
+}
+
+.restaurant-table tbody tr:hover {
+  background-color: var(--hover-bg);
+}
+
+.restaurant-table .actions button {
+  margin-right: 8px;
+}
+
+.edit-btn {
+  background-color: #f0a04e;
+  color: white;
+}
+
+.edit-btn:hover {
+  background-color: #d88c3e; /* 기존 색상보다 약간 어둡게 */
+}
+
+.delete-btn {
+  background-color: var(--danger-color);
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-btn {
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: 600;
+}
